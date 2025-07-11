@@ -4,10 +4,11 @@ import { FC, KeyboardEvent, useEffect, useRef, useState } from "react";
 
 interface Props {
   onSend: (message: Message) => void;
+  loading: boolean;
 }
 
-export const ChatInput: FC<Props> = ({ onSend }) => {
-  const [content, setContent] = useState<string>();
+export const ChatInput: FC<Props> = ({ onSend, loading }) => {
+  const [content, setContent] = useState<string>("");
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -22,8 +23,7 @@ export const ChatInput: FC<Props> = ({ onSend }) => {
   };
 
   const handleSend = () => {
-    if (!content) {
-      alert("Please enter a message");
+    if (!content || loading) {
       return;
     }
     onSend({ role: "user", content });
@@ -31,7 +31,7 @@ export const ChatInput: FC<Props> = ({ onSend }) => {
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey && !loading) {
       e.preventDefault();
       handleSend();
     }
@@ -40,7 +40,7 @@ export const ChatInput: FC<Props> = ({ onSend }) => {
   useEffect(() => {
     if (textareaRef && textareaRef.current) {
       textareaRef.current.style.height = "inherit";
-      textareaRef.current.style.height = `${textareaRef.current?.scrollHeight}px`;
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   }, [content]);
 
@@ -48,17 +48,24 @@ export const ChatInput: FC<Props> = ({ onSend }) => {
     <div className="relative">
       <textarea
         ref={textareaRef}
-        className="min-h-[44px] rounded-lg pl-4 pr-12 py-2 w-full focus:outline-none focus:ring-1 focus:ring-neutral-300 border-2 border-neutral-200"
+        className="min-h-[44px] rounded-lg pl-4 pr-12 py-2 w-full focus:outline-none focus:ring-1 focus:ring-neutral-300 border-2 border-neutral-200 disabled:bg-neutral-100"
         style={{ resize: "none" }}
-        placeholder="Type a message..."
+        placeholder={loading ? "Sila tunggu..." : "Taip mesej..."}
         value={content}
         rows={1}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
+        disabled={loading}
       />
 
-      <button onClick={() => handleSend()}>
-        <IconArrowUp className="absolute right-2 bottom-3 h-8 w-8 hover:cursor-pointer rounded-full p-1 bg-blue-500 text-white hover:opacity-80" />
+      <button
+        onClick={handleSend}
+        disabled={loading}
+        className={`absolute right-2 bottom-3 h-8 w-8 rounded-full p-1 ${
+          loading ? "bg-gray-300 cursor-not-allowed" : "bg-blue-500 hover:opacity-80"
+        } text-white`}
+      >
+        <IconArrowUp className="h-full w-full" />
       </button>
     </div>
   );

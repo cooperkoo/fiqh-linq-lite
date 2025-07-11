@@ -2,13 +2,21 @@ import { FC } from "react";
 
 export const Navbar: FC = () => {
   return (
-    <div className="flex h-[50px] sm:h-[60px] border-b border-neutral-300 py-2 px-2 sm:px-8 items-center justify-between">
-      <div className="font-bold text-3xl flex items-center">
+    <div className="flex flex-col border-b border-neutral-300 py-2 px-2 sm:px-8">
+      <div className="font-bold text-3xl">
         <a
-          className="ml-2 hover:opacity-50"
-          href="https://code-scaffold.vercel.app"
+          className="hover:opacity-50"
+          href="https://fiqh-linq-lite.vercel.app/"
         >
-          Chatbot UI
+          Fiqh Linq
+        </a>
+      </div>
+      <div className="font-bold text-xl mt-1">
+        <a
+          className="hover:opacity-50"
+          href="https://fiqh-linq-lite.vercel.app/"
+        >
+          Pembantu AI Peguam Syariah
         </a>
       </div>
     </div>

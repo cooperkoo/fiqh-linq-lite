@@ -1,61 +1,67 @@
-import { Message, OpenAIModel } from "@/types";
+import { Message } from "@/types";
 import { createParser, ParsedEvent, ReconnectInterval } from "eventsource-parser";
 
 export const OpenAIStream = async (messages: Message[]) => {
   const encoder = new TextEncoder();
-  const decoder = new TextDecoder();
 
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
-    },
+  const prompt = messages
+    .map((m) => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`)
+    .join("\n") + "\nAssistant:";
+
+  const res = await fetch("http://34.87.48.55:11434/api/generate", {
+    headers: { "Content-Type": "application/json" },
     method: "POST",
     body: JSON.stringify({
-      model: OpenAIModel.DAVINCI_TURBO,
-      messages: [
-        {
-          role: "system",
-          content: `You are a helpful, friendly, assistant.`
-        },
-        ...messages
-      ],
-      max_tokens: 800,
-      temperature: 0.0,
+      model: "qwen:7b",
+      prompt,
       stream: true
     })
   });
 
   if (res.status !== 200) {
-    throw new Error("OpenAI API returned an error");
+    const errText = await res.text();
+    console.error("API error:", errText);
+    throw new Error("Ollama API returned an error");
   }
+
+  const decoder = new TextDecoder();
 
   const stream = new ReadableStream({
     async start(controller) {
-      const onParse = (event: ParsedEvent | ReconnectInterval) => {
-        if (event.type === "event") {
-          const data = event.data;
+      const reader = res.body?.getReader();
+      if (!reader) {
+        controller.error("No response body");
+        return;
+      }
 
-          if (data === "[DONE]") {
-            controller.close();
-            return;
-          }
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+
+        let lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
 
           try {
-            const json = JSON.parse(data);
-            const text = json.choices[0].delta.content;
-            const queue = encoder.encode(text);
-            controller.enqueue(queue);
-          } catch (e) {
-            controller.error(e);
+            const json = JSON.parse(line);
+            const text = json.response;
+            if (json.done) {
+              controller.close();
+              return;
+            }
+            const chunk = encoder.encode(text);
+            controller.enqueue(chunk);
+          } catch (err) {
+            console.error("Parse error:", err);
+            controller.error(err);
           }
         }
-      };
-
-      const parser = createParser(onParse);
-
-      for await (const chunk of res.body as any) {
-        parser.feed(decoder.decode(chunk));
       }
     }
   });

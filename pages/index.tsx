@@ -8,7 +8,6 @@ import { useEffect, useRef, useState } from "react";
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -17,7 +16,6 @@ export default function Home() {
 
   const handleSend = async (message: Message) => {
     const updatedMessages = [...messages, message];
-
     setMessages(updatedMessages);
     setLoading(true);
 
@@ -37,13 +35,9 @@ export default function Home() {
     }
 
     const data = response.body;
-
-    if (!data) {
-      return;
-    }
+    if (!data) return;
 
     setLoading(false);
-
     const reader = data.getReader();
     const decoder = new TextDecoder();
     let done = false;
@@ -80,7 +74,7 @@ export default function Home() {
     setMessages([
       {
         role: "assistant",
-        content: `Hi there! I'm Chatbot UI, an AI assistant. I can help you with things like answering questions, providing information, and helping with tasks. How can I help you?`
+        content: `Assalamualaikum! Saya Pembantu AI Peguam Syariah anda. Saya sedia membantu anda menjawab soalan tentang undang-undang Syariah. Sila kemukakan soalan anda.`
       }
     ]);
   };
@@ -90,35 +84,23 @@ export default function Home() {
   }, [messages]);
 
   useEffect(() => {
-    setMessages([
-      {
-        role: "assistant",
-        content: `Hi there! I'm Chatbot UI, an AI assistant. I can help you with things like answering questions, providing information, and helping with tasks. How can I help you?`
-      }
-    ]);
+    handleReset(); // 初始加载也调用一次 reset
   }, []);
 
   return (
     <>
       <Head>
-        <title>Chatbot UI</title>
+        <title>Fiqh Linq - Pembantu AI Peguam Syariah</title>
         <meta
           name="description"
-          content="A simple chatbot starter kit for OpenAI's chat model using Next.js, TypeScript, and Tailwind CSS."
+          content="Fiqh Linq ialah aplikasi AI yang membantu menjawab pertanyaan Syariah secara pantas dan tepat oleh Pembantu Peguam Syariah."
         />
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1"
-        />
-        <link
-          rel="icon"
-          href="/favicon.ico"
-        />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <div className="flex flex-col h-screen">
         <Navbar />
-
         <div className="flex-1 overflow-auto sm:px-10 pb-4 sm:pb-10">
           <div className="max-w-[800px] mx-auto mt-4 sm:mt-12">
             <Chat
