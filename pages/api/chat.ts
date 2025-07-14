@@ -1,11 +1,9 @@
 import { Message } from "@/types";
 import { OpenAIStream } from "@/utils";
 
-/*
 export const config = {
   runtime: "edge"
 };
-*/
 
 const handler = async (req: Request): Promise<Response> => {
   try {

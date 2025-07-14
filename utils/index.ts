@@ -8,7 +8,7 @@ export const OpenAIStream = async (messages: Message[]) => {
     .map((m) => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`)
     .join("\n") + "\nAssistant:";
 
-  const res = await fetch("http://34.87.48.55:11434/api/generate", {
+  const res = await fetch("https://ai-law.greenootech.com/api/generate", {
     headers: { "Content-Type": "application/json" },
     method: "POST",
     body: JSON.stringify({
